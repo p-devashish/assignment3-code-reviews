@@ -32,7 +32,8 @@ def update_centroids(data, centroids, assignments):
     its previous centroid. Avoid modifying the input centroid array in place.
     """
     # Empty clusters: a centroid with no assigned points keeps its previous position.
-    new_centroids = centroids.copy()
+    # Cast to float so integer-typed centroids don't silently truncate the means.
+    new_centroids = centroids.astype(float, copy=True)
     for j in range(centroids.shape[0]):
         members = data[assignments == j]
         if len(members) > 0:
@@ -43,8 +44,12 @@ def update_centroids(data, centroids, assignments):
 def kmeans(data, centroids, max_iterations=100):
     """Assignment 4's provided alternating-update loop, with a final assignment."""
     for _ in range(max_iterations):
+        # Step 1: assign every point to its nearest current centroid.
         assignments = update_assignments(data, centroids)
+        # Step 2: move each centroid to the mean of the points assigned to it.
+        # The new centroids feed the next iteration's assignment step.
         centroids = update_centroids(data, centroids, assignments)
+    # The loop ends right after a centroid update, so recompute the assignments to make them consistent with the final centroids.
     assignments = update_assignments(data, centroids)
     return centroids, assignments
 
